@@ -1,7 +1,5 @@
 
-# SQLChain Interactor
-
-# Chat with PostgreSQL Data using LangChain, OpenAI, and Streamlit
+# Chat with SQL Data using LangChain
 
 ## Overview
 
@@ -42,7 +40,7 @@ This project aims to create a user-friendly interface that allows users to inter
 
 1. **Clone the repository:**
     ```sh
-    git clone https://github.com/shashankyadav03/sql-interactor.git
+    git clone https://github.com/shashankyadav03/sqlchain-interactor.git
     cd chat-with-postgresql
     ```
 
