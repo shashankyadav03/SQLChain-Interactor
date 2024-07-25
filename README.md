@@ -1,140 +1,124 @@
 
 # SQLChain Interactor
 
-## Overview
-SQLChain Interactor is a Python-based project that demonstrates an innovative approach to interacting with a PostgreSQL database using the LangChain framework. This project showcases the execution of SQL queries through a user-friendly interface, dynamic query generation, and data visualization, highlighting the power and flexibility of combining advanced frameworks with traditional database management.
+# Chat with PostgreSQL Data using LangChain, OpenAI, and Streamlit
 
-## Table of Contents
-- [Features](#features)
-- [Setup and Installation](#setup-and-installation)
-- [Database Schema and Sample Data](#database-schema-and-sample-data)
-- [Usage](#usage)
-  - [Basic SQL Queries](#basic-sql-queries)
-  - [Advanced SQL Operations](#advanced-sql-operations)
-  - [Interactive Query Interface](#interactive-query-interface)
-  - [Dynamic Query Generation](#dynamic-query-generation)
-  - [Data Visualization](#data-visualization)
-- [Security and Best Practices](#security-and-best-practices)
-- [Documentation](#documentation)
-- [Contributing](#contributing)
-- [License](#license)
+## Overview
+
+This project aims to create a user-friendly interface that allows users to interact with the Chinook PostgreSQL database using natural language. The system leverages OpenAI's API for natural language processing, LangChain's SQL Database Toolkit for translating natural language into SQL queries, and Streamlit for the user interface. The retrieved data is visualized using Matplotlib.
 
 ## Features
-- **Interactive SQL Query Execution:** Execute basic and advanced SQL queries through a user-friendly interface.
-- **LangChain Integration:** Leverage the LangChain framework to enhance SQL query execution.
-- **Dynamic Query Generation:** Create and execute dynamic SQL queries based on user input.
-- **Data Visualization:** Visualize query results with graphical representations using Matplotlib and Seaborn.
-- **Security Measures:** Implement best practices for database security and query execution.
 
-## Setup and Installation
-1. **Clone the Repository:**
-   ```bash
-   git clone https://github.com/yourusername/SQLChain-Interactor.git
-   cd SQLChain-Interactor
-   ```
+- **Natural Language Querying**: Users can input questions in natural language, and the system will generate the corresponding SQL query.
+- **Data Retrieval**: The system executes the SQL query on the Chinook PostgreSQL database and retrieves the relevant data.
+- **Data Visualization**: Retrieved data is visualized using Matplotlib for better understanding and insights.
+- **Advanced User Interface**: Built with Streamlit, providing a seamless and interactive user experience.
 
-2. **Set Up the Python Environment:**
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
+## Additional Features
 
-3. **Install Required Libraries:**
-   ```bash
-   pip install -r requirements.txt
-   ```
+- **Error Handling**: Graceful handling of invalid queries or data retrieval errors.
+- **Query History**: Logs of previous queries and results for reference.
+- **Customizable Visualizations**: Options to customize the type and style of visualizations.
+- **User Authentication**: Secure access to the application using user authentication mechanisms.
+- **Downloadable Reports**: Option to download query results and visualizations as reports.
 
-4. **Install and Configure PostgreSQL:**
-   - Download and install PostgreSQL from [here](https://www.postgresql.org/download/).
-   - Create a new database and user for the project.
+## Use Cases
 
-5. **Configure Environment Variables:**
-   - Create a `.env` file in the project root directory and add your PostgreSQL credentials:
-     ```
-     DB_NAME=your_db_name
-     DB_USER=your_db_user
-     DB_PASSWORD=your_db_password
-     DB_HOST=your_db_host
-     DB_PORT=your_db_port
-     ```
+- **Business Intelligence**: Quickly generate insights from the Chinook database without needing to write SQL.
+- **Data Analysis**: Visualize trends and patterns in the data with customizable charts.
+- **Educational Tool**: Learn and understand SQL querying and data visualization interactively.
+- **Ad-Hoc Reporting**: Generate on-demand reports for business or research purposes.
 
-6. **Run Database Schema and Insert Sample Data:**
-   ```bash
-   python setup_database.py
-   ```
+## Getting Started
 
-## Database Schema and Sample Data
-- The database schema includes tables for users, products, orders, and other entities relevant to the project.
-- Sample data is inserted to demonstrate the functionality of the project.
+### Prerequisites
+
+- Python 3.7 or higher
+- PostgreSQL database with the Chinook schema
+- OpenAI API key
+- Required Python packages (listed in `requirements.txt`)
+
+### Installation
+
+1. **Clone the repository:**
+    ```sh
+    git clone https://github.com/shashankyadav03/sql-interactor.git
+    cd chat-with-postgresql
+    ```
+
+2. **Install the required packages:**
+    ```sh
+    pip install -r requirements.txt
+    ```
+
+3. **Set up the Chinook PostgreSQL database:**
+    - Download and execute the Chinook PostgreSQL SQL script from [Chinook Database](https://github.com/lerocha/chinook-database/blob/master/ChinookDatabase/DataSources/Chinook_PostgreSql.sql) to set up the database.
+
+4. **Configure environment variables:**
+    - Create a `.env` file and add your OpenAI API key:
+    ```env
+    OPENAI_API_KEY=your_openai_api_key
+    DATABASE_URL=postgresql://username:password@localhost:5432/chinook
+    ```
+
+### Running the Application
+
+1. **Start the Streamlit application:**
+    ```sh
+    streamlit run app.py
+    ```
+
+2. **Access the application:**
+    - Open your web browser and go to `http://localhost:8501`.
+
+## Project Structure
+
+```plaintext
+.
+├── app.py                     # Main application file
+├── requirements.txt           # List of required Python packages
+├── README.md                  # Project documentation
+├── .env                       # Environment variables
+└── utils                      # Utility functions and modules
+    ├── query_generator.py     # Module to generate SQL queries from natural language
+    ├── data_retrieval.py      # Module to execute SQL queries and retrieve data
+    ├── visualization.py       # Module to create visualizations using Matplotlib
+    └── streamlit_ui.py        # Module to build the Streamlit user interface
+```
 
 ## Usage
 
-### Basic SQL Queries
-- Execute basic SQL operations like SELECT, INSERT, UPDATE, and DELETE using provided Python scripts.
-- Example:
-  ```python
-  from sqlchain_interactor import execute_query
+1. **Enter a natural language query:**
+    - Example: "Show me the top 10 selling albums."
 
-  query = "SELECT * FROM users;"
-  result = execute_query(query)
-  print(result)
-  ```
+2. **View the generated SQL query:**
+    - The system will display the SQL query generated from the natural language input.
 
-### Advanced SQL Operations
-- Perform complex queries involving JOINs, subqueries, and aggregate functions.
-- Example:
-  ```python
-  query = """
-  SELECT users.name, COUNT(orders.id) as order_count
-  FROM users
-  JOIN orders ON users.id = orders.user_id
-  GROUP BY users.name;
-  """
-  result = execute_query(query)
-  print(result)
-  ```
+3. **Retrieve and visualize data:**
+    - The retrieved data will be visualized using Matplotlib and displayed on the Streamlit interface.
 
-### Interactive Query Interface
-- Use the provided command-line interface (CLI) or web-based interface to execute SQL queries interactively.
-- Example CLI usage:
-  ```bash
-  python interactive_cli.py
-  ```
+## Future Enhancements
 
-### Dynamic Query Generation
-- Generate and execute dynamic SQL queries based on user input or predefined criteria.
-- Example:
-  ```python
-  from sqlchain_interactor import generate_dynamic_query
-
-  user_input = {'table': 'products', 'conditions': {'price': '>= 100'}}
-  query = generate_dynamic_query(user_input)
-  result = execute_query(query)
-  print(result)
-  ```
-
-### Data Visualization
-- Visualize query results with charts and graphs.
-- Example:
-  ```python
-  from sqlchain_interactor import visualize_data
-
-  query = "SELECT category, COUNT(*) as count FROM products GROUP BY category;"
-  result = execute_query(query)
-  visualize_data(result)
-  ```
-
-## Security and Best Practices
-- Implement SQL injection prevention techniques.
-- Follow best practices for database management and query execution.
-- Regularly update dependencies to address security vulnerabilities.
-
-## Documentation
-- Comprehensive documentation is available in the `docs` directory, including setup instructions, code explanations, and usage guidelines.
-- A user guide is provided to help users understand and navigate the project.
+- **Enhanced Natural Language Understanding**: Improve the accuracy of query generation using more advanced NLP models.
+- **Support for More Databases**: Extend support to other SQL databases like MySQL, SQLite, etc.
+- **Real-time Collaboration**: Allow multiple users to collaborate and share insights in real-time.
+- **Integration with BI Tools**: Integrate with business intelligence tools like Tableau or Power BI for advanced analytics.
 
 ## Contributing
-- Contributions are welcome! Please read the [contributing guidelines](CONTRIBUTING.md) for more information.
+
+Contributions are welcome! Please submit a pull request or open an issue to discuss changes.
 
 ## License
-- This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+This project is Unlicensed free to use.
+
+## Acknowledgements
+
+- [LangChain](https://github.com/hwchase17/langchain) for the SQL Database Toolkit.
+- [OpenAI](https://openai.com/) for the powerful language model API.
+- [Streamlit](https://streamlit.io/) for the easy-to-use web application framework.
+- [Chinook Database](https://github.com/lerocha/chinook-database) for the sample database.
+
+---
+
+Feel free to reach out with any questions or feedback!
