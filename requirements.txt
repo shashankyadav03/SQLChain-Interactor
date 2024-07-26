@@ -5,3 +5,4 @@ openai
 langchain
 psycopg2
 python-dotenv
+langchain_community

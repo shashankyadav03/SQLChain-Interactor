@@ -1,22 +1,30 @@
 import os
 import pandas as pd
-import psycopg2
-from psycopg2 import sql
+from sqlalchemy import create_engine
+from sqlalchemy.exc import SQLAlchemyError
 from dotenv import load_dotenv
+
+# Database connection details
+DB_USER = "postgres"
+DB_PASSWORD = "your_password"
+DB_NAME = "chinook"
+DB_HOST = "localhost"
+DB_PORT = "5432"
+
+# Create the database connection string
+DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
 # Load environment variables from .env file
 load_dotenv()
+    
 
-# Get database connection details from environment variables
-DATABASE_URL = os.getenv("DATABASE_URL")
-
-def get_db_connection():
-    """Establish a connection to the PostgreSQL database."""
+def get_db_engine():
+    """Create a SQLAlchemy engine."""
     try:
-        conn = psycopg2.connect(DATABASE_URL)
-        return conn
-    except Exception as e:
-        print(f"Error connecting to database: {e}")
+        engine = create_engine(DATABASE_URL)
+        return engine
+    except SQLAlchemyError as e:
+        print(f"Error creating database engine: {e}")
         return None
 
 def execute_sql_query(query):
@@ -29,18 +37,17 @@ def execute_sql_query(query):
     Returns:
         pd.DataFrame: The results of the query as a pandas DataFrame.
     """
-    conn = get_db_connection()
-    if conn is None:
-        return pd.DataFrame()  # Return an empty DataFrame if connection failed
+    engine = get_db_engine()
+    if engine is None:
+        return pd.DataFrame()  # Return an empty DataFrame if engine creation failed
 
     try:
-        df = pd.read_sql_query(query, conn)
+        with engine.connect() as connection:
+            df = pd.read_sql_query(query, connection)
         return df
-    except Exception as e:
+    except SQLAlchemyError as e:
         print(f"Error executing query: {e}")
         return pd.DataFrame()  # Return an empty DataFrame in case of error
-    finally:
-        conn.close()
 
 def get_table_schema(table_name):
     """
@@ -52,19 +59,20 @@ def get_table_schema(table_name):
     Returns:
         pd.DataFrame: The schema of the table as a pandas DataFrame.
     """
-    query = sql.SQL(
-        "SELECT column_name, data_type FROM information_schema.columns WHERE table_name = {table}"
-    ).format(table=sql.Identifier(table_name))
+    query = f"""
+    SELECT column_name, data_type 
+    FROM information_schema.columns 
+    WHERE table_name = '{table_name}'
+    """
 
-    conn = get_db_connection()
-    if conn is None:
-        return pd.DataFrame()  # Return an empty DataFrame if connection failed
+    engine = get_db_engine()
+    if engine is None:
+        return pd.DataFrame()  # Return an empty DataFrame if engine creation failed
 
     try:
-        df = pd.read_sql_query(query, conn)
+        with engine.connect() as connection:
+            df = pd.read_sql_query(query, connection)
         return df
-    except Exception as e:
+    except SQLAlchemyError as e:
         print(f"Error retrieving table schema: {e}")
         return pd.DataFrame()  # Return an empty DataFrame in case of error
-    finally:
-        conn.close()

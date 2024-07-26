@@ -13,7 +13,7 @@ if [ "$create_user_output" != "1" ]; then
 fi
 
 # Set up the PostgreSQL user password
-psql -U postgres -c "ALTER USER postgres PASSWORD 'your_password';"
+psql -U postgres -c "ALTER USER postgres PASSWORD 'sqldbai';"
 
 # Define the database name
 DB_NAME="chinook"

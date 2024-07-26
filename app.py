@@ -3,90 +3,35 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from services.query_generator import generate_sql_query
 from services.data_retrieval import execute_sql_query, get_table_schema
-from services.visualization import plot_data, plot_time_series, plot_histogram, plot_pie_chart
+from services.visualization import plot_data
+import os
 
 # Set the page config to wide mode
-st.set_page_config(page_title="High-Tech SQL Chat", layout="wide")
+st.set_page_config(page_title="SQL Chat", layout="wide")
+
 
 # Sidebar for schema updates and settings
 with st.sidebar:
-    st.title("Settings & Schema Updates")
-    st.markdown("## Update Database Schema")
     
     # Option to upload a new schema file
-    schema_file = st.file_uploader("Upload new schema", type=["sql", "csv"])
+    st.markdown("## Database Schema")
+    
+    schema_file = st.file_uploader("Upload New Schema", type=["sql", "csv"],key="schema_file_uploader", accept_multiple_files=False)
     
     if schema_file:
         st.success("Schema file uploaded successfully!")
-    
-    st.markdown("---")
-    st.markdown("## Application Settings")
-    # Options to customize the visualization
-    theme = st.selectbox("Select Theme", ["Light", "Dark"])
-    primary_color = st.color_picker("Choose Primary Color", "#00f900")
-    st.markdown("---")
+        # Update the schema file if already exists
+        if os.path.exists("utilities/temp/schema.sql"):
+            os.remove("utilities/temp/schema.sql")
 
-# Main interface
-st.title("Chat with PostgreSQL Data")
-st.markdown("### Enter your query in natural language:")
-user_query = st.text_area("Your query here...", height=100)
+        # Save the uploaded .sql file to a temporary location
+        with open("utilities/temp/schema.sql", "wb") as file:
+            file.write(schema_file.getvalue())
 
-# If the user submits a query
-if st.button("Submit Query"):
-    if user_query:
-        st.markdown("### Generated SQL Query:")
-        sql_query = generate_sql_query(user_query)
-        st.code(sql_query, language="sql")
-        
-        # Execute the SQL query
-        data = execute_sql_query(sql_query)
-        
-        if not data.empty:
-            st.markdown("### Query Results:")
-            st.dataframe(data)
-            
-            st.markdown("### Data Visualization:")
-            # Plotting the data using matplotlib
-            fig, ax = plt.subplots()
-            plot_data(data, ax)
-            st.pyplot(fig)
-        else:
-            st.error("No data returned from the query. Please try a different query.")
-    else:
-        st.error("Please enter a query to proceed.")
-
-# Adding interactive elements
-with st.expander("See Advanced Options"):
-    st.markdown("### Advanced Query Options")
-    max_rows = st.slider("Select max rows to display", 10, 100, 20)
-    show_raw_data = st.checkbox("Show raw data")
-    
-    if show_raw_data and 'data' in locals():
-        st.markdown("### Raw Data")
-        st.write(data.head(max_rows))
-
-st.markdown("---")
-st.markdown("## Recent Queries")
-recent_queries = ["Show top 10 albums", "List all artists", "Find tracks by genre"]
-selected_query = st.selectbox("Select a recent query", recent_queries)
-
-if st.button("Use Selected Query"):
-    st.text_area("Your query here...", value=selected_query, height=100, key="recent_query")
-
-# Footer with additional information
-st.markdown("---")
-st.markdown("### About this App")
-st.info("This application allows you to interact with a PostgreSQL database using natural language queries. Built with Streamlit, OpenAI, and LangChain.")
-
-# Displaying current settings in the sidebar
-with st.sidebar:
-    st.markdown("### Current Settings")
-    st.write(f"Theme: {theme}")
-    st.write(f"Primary Color: {primary_color}")
 
 # Schema section in sidebar
 with st.sidebar:
-    st.markdown("## Database Schema")
+    st.markdown("## Table Schema")
     table_name = st.text_input("Enter table name to view schema")
     if table_name:
         schema_df = get_table_schema(table_name)
@@ -94,4 +39,86 @@ with st.sidebar:
             st.write(schema_df)
         else:
             st.error("Table not found or error retrieving schema")
+
+# Main interface
+st.markdown("### Enter your query in natural language:")
+user_query = st.text_area("Your query here...", height=50)
+
+# If the user submits a query
+if st.button("Submit Query"):
+    if user_query:
+        with st.spinner("Processing your query..."):
+            
+            # Check if schema file is uploaded
+            if not os.path.exists("utilities/temp/schema.sql"):
+                st.error("Please upload a schema file to proceed.")
+                st.stop()
+            # Read temp/schema.sql from the uploaded file
+            with open("utilities/temp/schema.sql", "r") as file:
+                schema = file.read()
+
+            try:
+                sql_query = generate_sql_query(user_query, schema)
+                st.markdown("### Generated SQL Query:")
+                st.code(sql_query, language="sql")
+                
+                
+                # Execute the SQL query
+                data = execute_sql_query(sql_query)
+                
+                if not data.empty:
+                    st.markdown("### Query Results:")
+                    st.dataframe(data)
+                    
+                    st.markdown("### Data Visualization:")
+                    # Plotting the data using matplotlib
+                    fig, ax = plt.subplots()
+                    plot_data(data, ax)
+                    st.pyplot(fig)
+                else:
+                    st.error("No data returned from the query. Please try a different query.")
+            except Exception as e:
+                st.error(f"An error occurred while executing this query: {e}")
+    else:
+        st.error("Please enter a query to proceed.")
+
+# Adding interactive elements
+# Show advance option only when data is returned
+if 'data' in locals():
+    with st.expander("See Advanced Options"):
+        st.markdown("### Advanced Query Options")
+        max_rows = st.slider("Select max rows to display", 5, 100, 10)
+        show_raw_data = st.checkbox("Show raw data")
+        
+        if show_raw_data:
+            st.markdown("### Raw Data")
+            st.write(data.head(max_rows)) 
+
+
+
+
+# Recent queries section
+with st.sidebar:
+    st.markdown("## Recent Queries")
+    recent_queries = ["Show top 10 albums", "List all artists", "Find tracks by genre"]
+    selected_query = st.selectbox("Select a recent query", recent_queries)
+
+    if st.button("Use Selected Query"):
+        st.text_area("Your query here...", value=selected_query, height=100, key="recent_query")
+
+
+# Displaying current settings in the sidebar
+with st.sidebar:
+    st.markdown("---")
+    st.markdown("## Application Settings")
+    # Options to customize the visualization
+    theme = st.selectbox("Select Theme", ["Light", "Dark"])
+    primary_color = st.color_picker("Choose Primary Color", "#00f900")
+
+    st.markdown("---")
+    st.markdown("### Current Settings")
+    st.write(f"Theme: {theme}")
+    st.write(f"Primary Color: {primary_color}")
+
+
 
